@@ -1,69 +1,101 @@
 # Meta Cellular Automata (meta-ca)
 
-This project implements a cellular automata simulation running on an ESP32 using the Arduino framework. The simulation generates composite video output through the [`ESP_8_BIT_composite`](src/main.cpp) library while allowing interactive control via potentiometers.
+Meta Cellular Automata is a simulation application for the ESP32 that implements a customized version of a cellular automata. The project generates composite video output using the ESP_8_BIT_composite library while transmitting and receiving data using ESP-NOW.
 
 ## Features
 
-- **Composite Video Output:** Uses 8-bit composite output for video.
-- **Cellular Automata Simulation:** Evolves a board based on customizable born and survival rules.
-- **Interactive Controls:** 
-  - **Color Multiplier:** Adjusts color intensity.
-  - **Born Rule (Pin 35):** Changes how new cells are born.
-  - **Survival Rule (Pin 32):** Alters cell survival conditions.
-  - **Center Line Generation (Pin 33):** Adds a force to generate a center line.
-- **WiFi Connectivity:** Attempts to connect to WiFi for status reporting.
+- **Cellular Automata Simulation:**  
+  Evolves a grid (`board`) of cells using customizable born and survival rules similar to Conway's Game of Life.
+- **Composite Video Output:**  
+  Uses the ESP_8_BIT_composite library to display evolving patterns on composite video hardware.
+- **ESP-NOW Communication:**  
+  Sends and receives neighborhood data over ESP-NOW for potential multi-device interactions.
+- **Analog Input Controls:**  
+  Utilizes four potentiometers (inputs on pins 34, 35, 32, and 33) for controlling simulation parameters such as the center line force and rule configurations.
 
 ## Hardware Requirements
 
-- ESP32Doit-devkit-v1 board.
-- Potentiometers connected to ADC pins 34, 35, 32, and 33.
-- Compatible composite video output hardware.
+- **Development Board:** ESP32DevKit (e.g., esp32doit-devkit-v1).
+- **Video Output:** Hardware compatible with composite video.
+- **Controls:** Four potentiometers connected to the corresponding ADC pins (34, 35, 32, and 33).
 
 ## Software Requirements
 
-- [PlatformIO](https://platformio.org/) installed.
-- Arduino framework for ESP32 (configured in [platformio.ini](platformio.ini)).
+- [PlatformIO](https://platformio.org/) for project management and build.
+- Arduino framework for ESP32.
+- Relevant libraries:  
+  - [ESP_8_BIT_composite](https://github.com/yourusername/ESP_8_BIT_composite)  
+  - WiFi and ESP-NOW libraries (included with the Arduino core).
 
 ## Project Structure
 
-- **src/**: Contains the main application code ([`main.cpp`](src/main.cpp)).
-- **include/**: For shared header files.
-- **lib/**: Private libraries for the project.
-- **test/**: Automated tests and additional resources.
+- **src/**  
+  Contains the main source code:
+  - [`main.cpp`](src/main.cpp): Main application code handling setup, simulation loop, rendering, and ESP-NOW communication.
+  - [`general.hpp`](src/general.hpp): Contains constants, global variables, and helper function declarations.
+  - [`config.hpp`](src/config.hpp): Device-specific configuration, such as MAC addresses for ESP-NOW.
+  - [`neighborhood.hpp`](src/neighborhood.hpp): Defines the `Neighborhood` class for managing cell neighborhood data.
+- **lib/**  
+  (Optional) Additional custom libraries.
+- **test/**  
+  Unit tests for simulation logic (if applicable).
 
 ## Getting Started
 
 1. **Clone the Repository:**
-    ```sh
-    git clone <repository-url>
-    cd meta-ca
-    ```
+   ```sh
+   git clone <repository-url>
+   cd meta-ca
+   ```
 
-2. **Build the Project:**
-    ```sh
-    pio run
-    ```
+2. **Configure PlatformIO:**  
+   Ensure your `platformio.ini` is configured correctly for your ESP32 board.
 
-3. **Upload the Firmware:**
-    ```sh
-    pio run --target upload
-    ```
+3. **Build the Project:**
+   ```sh
+   pio run
+   ```
 
-4. **(Optional) Debug:**
-    Use the debug configurations available in [`.vscode/launch.json`](.vscode/launch.json).
+4. **Upload the Firmware:**
+   ```sh
+   pio run --target upload
+   ```
 
-## Controls
+5. **Monitor Serial Output:**  
+   Use the PlatformIO Serial Monitor:
+   ```sh
+   pio device monitor
+   ```
 
-- **Potentiometer on Pin 34:** Adjusts the color multiplier.
-- **Potentiometer on Pin 35:** Sets the born rule.
-- **Potentiometer on Pin 32:** Sets the survival rule.
-- **Potentiometer on Pin 33:** Controls the strength of center line generation.
+## Code Overview
 
-## Notes
+- **main.cpp:**  
+  Initializes the video output, configures ESP-NOW communication, registers the receive callback (`OnDataSideRecv`), and handles the simulation loop (rendering, evolving, and center line generation).
 
-- The simulation applies a rule set inspired by Conway's Game of Life with custom modifications.
-- Each generated frame is based on the current state of the cellular board.
-- WiFi connectivity is used mainly for printing connection status during setup.
+- **general.hpp:**  
+  Contains simulation constants (grid size, cell lifetime, etc.), analog input pin mappings, and global grids used for storing simulation states.
+
+- **config.hpp:**  
+  Defines the MAC addresses for ESP-NOW communication (currently set for EAST_MAC by default).
+
+- **neighborhood.hpp:**  
+  Defines the `Neighborhood` class to package and handle neighborhood data dynamically.
+
+## Customization
+
+- **Rules:**  
+  Modify `born_rule` and `survive_rule` in `general.hpp` to experiment with different cellular automata behaviors.
+- **Hardware Pins:**  
+  Change analog input pins and cell or pixel dimensions by editing `general.hpp`.
+- **ESP-NOW Peers:**  
+  Uncomment or update additional MAC defines in `config.hpp` to enable multi-device networking.
+
+## Troubleshooting
+
+- **Compilation Errors:**  
+  Ensure your header files use include guards (see `general.hpp` and `config.hpp`) to avoid redefinition errors.
+- **ESP-NOW Issues:**  
+  Verify that your ESP32 devices are configured correctly and that the proper MAC addresses are in use.
 
 ## License
 
@@ -71,4 +103,4 @@ This project implements a cellular automata simulation running on an ESP32 using
 
 ## Acknowledgements
 
-- Thanks to the contributors of [PlatformIO](https://platformio.org/) and the authors of the [`ESP_8_BIT_composite`](src/main.cpp) library.
+- Thanks to the maintainers of PlatformIO, Arduino-ESP32, and the contributors of the ESP_8_BIT_composite library.

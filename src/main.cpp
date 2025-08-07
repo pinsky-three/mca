@@ -17,25 +17,26 @@ uint8_t southAddress[] = {SOUTH_MAC};
 
 #ifdef EAST_MAC
 uint8_t eastAddress[] = {EAST_MAC};
+// Neighborhood east(CELLS_Y);
 #endif
 
 #if WEST_MAC
 uint8_t westAddress[] = {WEST_MAC};
+Neighborhood west(CELLS_X);
 #endif
 
-ESP_8_BIT_composite video_out(true);
+Neighborhood dataSide(CELLS_Y);
 
-Neighborhood east(CELLS_Y);
-Neighborhood west(CELL_SIZE_Y);
+ESP_8_BIT_composite video_out(true);
 
 esp_now_peer_info_t peerInfoEast;
 esp_now_peer_info_t peerInfoWest;
 
 void OnDataSideRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
-  memcpy(&east, incomingData, sizeof(east));
+  memcpy(&dataSide, incomingData, sizeof(dataSide));
 
   Serial.print("Received data from: ");
-  Serial.print(east.name);
+  Serial.print(dataSide.name);
   Serial.print(" with MAC: ");
   for (int i = 0; i < 6; i++) {
     Serial.print(mac[i], HEX);
@@ -115,16 +116,19 @@ void loop() {
     generate_center_line(center_line_force);
   }
 
-  strcpy(east.name, "east");
-  east.data[CELLS_Y] = board[CELLS_X - 1];
+#if EAST_MAC
+  strcpy(dataSide.name, "east");
+  dataSide.data[CELLS_Y] = board[CELLS_X - 1];
 
-  esp_err_t result = esp_now_send(eastAddress, (uint8_t*)&east, sizeof(east));
+  esp_err_t result =
+      esp_now_send(eastAddress, (uint8_t*)&dataSide, sizeof(dataSide));
 
   if (result == ESP_OK) {
     Serial.println("Sent with success");
   } else {
     Serial.println("Error sending the data");
   }
+#endif
 }
 
 void render(uint8_t** frameBufferLines, int color_multiplier) {
