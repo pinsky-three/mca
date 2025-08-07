@@ -1,8 +1,6 @@
 
 #include <Arduino.h>
 
-// #include <general.hpp>
-
 struct Neighborhood {
   char name[32];
   uint8_t* data;

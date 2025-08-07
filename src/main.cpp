@@ -3,23 +3,47 @@
 #include <WiFi.h>
 #include <esp_now.h>
 
+#include <config.hpp>
 #include <general.hpp>
 #include <neighborhood.hpp>
 
-uint8_t eastAddress[] = {0x80, 0xf3, 0xda, 0x43, 0x02, 0xf4};
+#if NORTH_MAC
+uint8_t northAddress[] = {NORTH_MAC};
+#endif
+
+#if SOUTH_MAC
+uint8_t southAddress[] = {SOUTH_MAC};
+#endif
+
+#ifdef EAST_MAC
+uint8_t eastAddress[] = {EAST_MAC};
+#endif
+
+#if WEST_MAC
+uint8_t westAddress[] = {WEST_MAC};
+#endif
 
 ESP_8_BIT_composite video_out(true);
 
 Neighborhood east(CELLS_Y);
 Neighborhood west(CELL_SIZE_Y);
 
-esp_now_peer_info_t peerInfo;
+esp_now_peer_info_t peerInfoEast;
+esp_now_peer_info_t peerInfoWest;
 
-void OnEastRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
+void OnDataSideRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&east, incomingData, sizeof(east));
 
   Serial.print("Received data from: ");
-  Serial.println(east.name);
+  Serial.print(east.name);
+  Serial.print(" with MAC: ");
+  for (int i = 0; i < 6; i++) {
+    Serial.print(mac[i], HEX);
+    if (i < 5) {
+      Serial.print(":");
+    }
+  }
+  Serial.println();
 }
 
 void setup() {
@@ -46,13 +70,33 @@ void setup() {
     }
   }
 
-  esp_now_register_recv_cb(OnEastRecv);
+  esp_now_register_recv_cb(OnDataSideRecv);
 
-  memcpy(peerInfo.peer_addr, eastAddress, 6);
-  peerInfo.channel = 0;
-  peerInfo.encrypt = false;
+#ifdef NORTH_MAC
+  memcpy(peerInfoNorth.peer_addr, northAddress, 6);
+  peerInfoNorth.channel = 0;
+  peerInfoNorth.encrypt = false;
+#endif
 
-  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+#ifdef SOUTH_MAC
+  memcpy(peerInfoSouth.peer_addr, southAddress, 6);
+  peerInfoSouth.channel = 1;
+  peerInfoSouth.encrypt = false;
+#endif
+
+#ifdef EAST_MAC
+  memcpy(peerInfoEast.peer_addr, eastAddress, 6);
+  peerInfoEast.channel = 2;
+  peerInfoEast.encrypt = false;
+#endif
+
+#ifdef WEST_MAC
+  memcpy(peerInfoWest.peer_addr, westAddress, 6);
+  peerInfoWest.channel = 3;
+  peerInfoWest.encrypt = false;
+#endif
+
+  if (esp_now_add_peer(&peerInfoEast) != ESP_OK) {
     Serial.println("Failed to add peer");
     return;
   }
