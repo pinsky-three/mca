@@ -1,3 +1,6 @@
+#ifndef GENERAL_HPP
+#define GENERAL_HPP
+
 #include <Arduino.h>
 
 const uint8_t input_pot_1_pin = 34;
@@ -28,3 +31,5 @@ uint8_t board_copy[(CELLS_Y * CELLS_X)];
 void evolve();
 void render(uint8_t** frameBufferLines, int color_multiplier);
 void generate_center_line(uint8_t thickness);
+
+#endif  // GENERAL_HPP
