@@ -17,20 +17,19 @@ uint8_t southAddress[] = {SOUTH_MAC};
 
 #ifdef EAST_MAC
 uint8_t eastAddress[] = {EAST_MAC};
-// Neighborhood east(CELLS_Y);
+Neighborhood east(CELLS_Y);
+esp_now_peer_info_t peerInfoEast;
 #endif
 
 #if WEST_MAC
 uint8_t westAddress[] = {WEST_MAC};
 Neighborhood west(CELLS_X);
+esp_now_peer_info_t peerInfoWest;
 #endif
 
 Neighborhood dataSide(CELLS_Y);
 
 ESP_8_BIT_composite video_out(true);
-
-esp_now_peer_info_t peerInfoEast;
-esp_now_peer_info_t peerInfoWest;
 
 void OnDataSideRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&dataSide, incomingData, sizeof(dataSide));
@@ -53,15 +52,17 @@ void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
 
+  Serial.println("Initializing ESP-NOW...");
+
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
 
-  for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
-    Serial.print(".");
-    delay(1000);
-  }
+  // for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
+  //   Serial.print(".");
+  //   delay(1000);
+  // }
 
   analogReadResolution(9);
 
@@ -81,26 +82,40 @@ void setup() {
 
 #ifdef SOUTH_MAC
   memcpy(peerInfoSouth.peer_addr, southAddress, 6);
-  peerInfoSouth.channel = 1;
+  peerInfoSouth.channel = 0;
   peerInfoSouth.encrypt = false;
 #endif
 
 #ifdef EAST_MAC
   memcpy(peerInfoEast.peer_addr, eastAddress, 6);
-  peerInfoEast.channel = 2;
+  peerInfoEast.channel = 0;
   peerInfoEast.encrypt = false;
-#endif
-
-#ifdef WEST_MAC
-  memcpy(peerInfoWest.peer_addr, westAddress, 6);
-  peerInfoWest.channel = 3;
-  peerInfoWest.encrypt = false;
-#endif
 
   if (esp_now_add_peer(&peerInfoEast) != ESP_OK) {
     Serial.println("Failed to add peer");
     return;
   }
+#endif
+
+#ifdef WEST_MAC
+  memcpy(peerInfoWest.peer_addr, westAddress, 6);
+  peerInfoWest.channel = 0;
+  peerInfoWest.encrypt = false;
+
+  if (esp_now_add_peer(&peerInfoWest) != ESP_OK) {
+    Serial.println("Failed to add peer");
+    return;
+  }
+
+  Serial.print("WEST MAC Peer Added: ");
+  for (int i = 0; i < 6; i++) {
+    Serial.print(westAddress[i], HEX);
+    if (i < 5) {
+      Serial.print(":");
+    }
+  }
+  Serial.println();
+#endif
 }
 
 void loop() {
@@ -129,6 +144,8 @@ void loop() {
     Serial.println("Error sending the data");
   }
 #endif
+
+  delay(1000);
 }
 
 void render(uint8_t** frameBufferLines, int color_multiplier) {
