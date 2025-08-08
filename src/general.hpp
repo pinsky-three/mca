@@ -1,7 +1,12 @@
 #ifndef GENERAL_HPP
 #define GENERAL_HPP
 
+#ifdef ARDUINO
 #include <Arduino.h>
+#else
+#include <stdint.h>
+#include <string.h>
+#endif
 
 const uint8_t input_pot_1_pin = 34;
 const uint8_t input_pot_2_pin = 35;
@@ -25,8 +30,8 @@ const uint8_t STATE_ALIVE = CELL_LIFETIME - 1;
 uint16_t born_rule = 0b000001000;     // {3}
 uint16_t survive_rule = 0b000001100;  // {3,2}
 
-uint8_t board[(CELLS_Y * CELLS_X)];
-uint8_t board_copy[(CELLS_Y * CELLS_X)];
+extern uint8_t board[(CELLS_Y * CELLS_X)];
+extern uint8_t board_copy[(CELLS_Y * CELLS_X)];
 
 void evolve();
 void render(uint8_t** frameBufferLines, int color_multiplier);

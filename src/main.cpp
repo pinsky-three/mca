@@ -67,7 +67,7 @@ void setup() {
 
   for (int y = 0; y < CELLS_Y; y++) {
     for (int x = 0; x < CELLS_X; x++) {
-      board[y * CELLS_Y + x] = random(0, CELL_LIFETIME);
+      board[y * CELLS_X + x] = random(0, CELL_LIFETIME);
     }
   }
 
@@ -134,7 +134,7 @@ void loop() {
 void render(uint8_t** frameBufferLines, int color_multiplier) {
   for (int y = 0; y < PIXELS_Y; y++) {
     for (int x = 0; x < PIXELS_X; x++) {
-      int index = (y / CELL_SIZE_Y) * CELLS_Y + (x / CELL_SIZE_X);
+      int index = (y / CELL_SIZE_Y) * CELLS_X + (x / CELL_SIZE_X);
 
       frameBufferLines[y][x] = board[index] * color_multiplier / CELL_LIFETIME;
     }
@@ -149,7 +149,7 @@ void generate_center_line(uint8_t thickness) {
 
   for (int y = y_from; y < y_to; y++) {
     for (int x = 0; x < CELLS_X; x++) {
-      board[y * CELLS_Y + x] = random(0, CELL_LIFETIME);
+      board[y * CELLS_X + x] = random(0, CELL_LIFETIME);
     }
   }
 }
@@ -159,7 +159,7 @@ void evolve() {
 
   for (int y = 0; y < CELLS_Y; y++) {
     for (int x = 0; x < CELLS_X; x++) {
-      int current_state = board[y * CELLS_Y + x];
+      int current_state = board[y * CELLS_X + x];
 
       uint8_t total_n = 0;
 
@@ -169,7 +169,7 @@ void evolve() {
             int neighborX = (x + dx) % CELLS_X;
             int neighborY = (y + dy) % CELLS_Y;
 
-            int neighbor_state = board[neighborY * CELLS_Y + neighborX];
+            int neighbor_state = board[neighborY * CELLS_X + neighborX];
 
             if (neighbor_state == STATE_ALIVE) {
               total_n += 1;
@@ -180,14 +180,14 @@ void evolve() {
 
       if (current_state == STATE_DEAD) {
         if ((born_rule >> total_n) & 1) {
-          board_copy[y * CELLS_Y + x] = STATE_ALIVE;
+          board_copy[y * CELLS_X + x] = STATE_ALIVE;
         }
       } else if (current_state == STATE_ALIVE) {
         if (!((survive_rule >> total_n) & 1)) {
-          board_copy[y * CELLS_Y + x] = STATE_DEAD;
+          board_copy[y * CELLS_X + x] = STATE_DEAD;
         }
       } else {
-        board_copy[y * CELLS_Y + x] = current_state - 1;
+        board_copy[y * CELLS_X + x] = current_state - 1;
       }
     }
   }
