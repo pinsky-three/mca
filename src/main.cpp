@@ -72,8 +72,6 @@ void setup() {
     }
   }
 
-  esp_now_register_recv_cb(OnDataSideRecv);
-
 #ifdef NORTH_MAC
   memcpy(peerInfoNorth.peer_addr, northAddress, 6);
   peerInfoNorth.channel = 0;
@@ -116,6 +114,13 @@ void setup() {
   }
   Serial.println();
 #endif
+
+  if (esp_now_register_recv_cb(OnDataSideRecv) != ESP_OK) {
+    Serial.println("Failed to register receive callback");
+    return;
+  }
+
+  Serial.println("ESP-NOW initialized successfully");
 }
 
 void loop() {
